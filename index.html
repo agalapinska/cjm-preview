@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uproszczona Customer Journey Map — Ergo Hestia</title>
+<style>
+  :root{
+    --ink:#1a1d29; --muted:#6b7080; --line:#e4e6ee; --bg:#f7f8fb;
+    --red:#c8102e; --redsoft:#fdeef0; --green:#0f7b4d; --greensoft:#e9f6f0;
+    --amber:#b45309; --ambersoft:#fdf3e3; --blue:#1c4fa0; --bluesoft:#eaf1fc;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{font-family:'Segoe UI', Arial, sans-serif; background:var(--bg); color:var(--ink); padding:32px 24px 48px;}
+  header{max-width:1480px; margin:0 auto 8px;}
+  header h1{font-size:26px; letter-spacing:-.02em}
+  header p{color:var(--muted); font-size:13.5px; margin-top:6px; max-width:900px}
+  .legend{display:flex; gap:16px; margin:14px 0 22px; flex-wrap:wrap; font-size:12px; color:var(--muted); align-items:center}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px}
+  .map{max-width:1480px; margin:0 auto; display:grid; grid-template-columns:repeat(6,1fr); gap:12px;}
+  .stage{display:flex; flex-direction:column; gap:10px; min-width:0}
+  .stage-head{background:#fff; border:1px solid var(--line); border-top:4px solid var(--red); border-radius:10px; padding:12px 14px;}
+  .stage-head .num{font-size:11px; color:var(--muted); letter-spacing:.08em}
+  .stage-head h2{font-size:15.5px; margin-top:2px; line-height:1.25}
+  .stage-head .goal{font-size:12.5px; color:var(--muted); margin-top:6px; line-height:1.45}
+  .card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:11px 13px; font-size:12.5px; line-height:1.5; cursor:default}
+  .card h3{font-size:11px; text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px; font-weight:600}
+  .card.doing h3{color:var(--blue)} .card.doing{background:var(--bluesoft); border-color:#d3e1f7}
+  .card.pain h3{color:var(--red)} .card.pain{background:var(--redsoft); border-color:#f5d4da}
+  .card.opp h3{color:var(--green)} .card.opp{background:var(--greensoft); border-color:#cfe9dd}
+  .card.quote{background:var(--ambersoft); border-color:#f1dfc0; font-style:italic; position:relative}
+  .card.quote h3{color:var(--amber); font-style:normal}
+  .card.quote .src{display:block; margin-top:6px; font-style:normal; font-size:11px; color:var(--muted)}
+  .card ul{list-style:none}
+  .card li{padding-left:14px; position:relative; margin-bottom:5px}
+  .card li:before{content:"–"; position:absolute; left:0; color:inherit; opacity:.55}
+  /* emotion curve */
+  .curve-wrap{max-width:1480px; margin:6px auto 14px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 6px 2px; position:relative}
+  .curve-title{position:absolute; top:8px; left:14px; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:600}
+  svg{display:block; width:100%; height:120px}
+  .emoji-row{display:grid; grid-template-columns:repeat(6,1fr); text-align:center; font-size:18px; padding-bottom:8px}
+  .emoji-row span small{display:block; font-size:10.5px; color:var(--muted); font-style:italic; margin-top:1px}
+  footer{max-width:1480px; margin:26px auto 0; font-size:11.5px; color:var(--muted); line-height:1.6}
+  .toggles{max-width:1480px; margin:0 auto 14px; display:flex; gap:8px}
+  .toggles button{font-size:12px; padding:6px 14px; border-radius:20px; border:1px solid var(--line); background:#fff; cursor:pointer; color:var(--ink)}
+  .toggles button.off{opacity:.38}
+  @media(max-width:1100px){ .map{grid-template-columns:repeat(2,1fr)} .curve-wrap,.emoji-row{display:none} }
+  @media print{ body{background:#fff; padding:10px} .toggles{display:none} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Uproszczona Customer Journey Map — kontakt klienta z ERGO Hestią</h1>
+  <p>Od zdarzenia do decyzji ubezpieczyciela. Synteza 20 sesji badawczych (IDI + testy użyteczności, 15–22.06.2026). Cytaty z transkrypcji: (data sesji, minuta nagrania).</p>
+  <div class="legend">
+    <span><span class="dot" style="background:#1c4fa0"></span>Co robi użytkownik</span>
+    <span><span class="dot" style="background:#c8102e"></span>Problemy</span>
+    <span><span class="dot" style="background:#b45309"></span>Cytat</span>
+    <span><span class="dot" style="background:#0f7b4d"></span>Szanse / rekomendacje</span>
+  </div>
+</header>
+
+<div class="toggles">
+  <button data-t="doing">Działania</button>
+  <button data-t="pain">Problemy</button>
+  <button data-t="quote">Cytaty</button>
+  <button data-t="opp">Szanse</button>
+</div>
+
+<div class="curve-wrap">
+  <span class="curve-title">Krzywa emocji</span>
+  <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+    <line x1="0" y1="60" x2="1200" y2="60" stroke="#e4e6ee" stroke-dasharray="4 4"/>
+    <path d="M100,95 C 220,88 260,70 300,62 S 460,38 500,42 S 640,102 700,100 S 860,72 900,66 S 1060,50 1100,55"
+          fill="none" stroke="#c8102e" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="100" cy="95" r="5" fill="#c8102e"/><circle cx="300" cy="62" r="5" fill="#c8102e"/>
+    <circle cx="500" cy="42" r="5" fill="#c8102e"/><circle cx="700" cy="100" r="5" fill="#c8102e"/>
+    <circle cx="900" cy="66" r="5" fill="#c8102e"/><circle cx="1100" cy="55" r="5" fill="#c8102e"/>
+  </svg>
+  <div class="emoji-row">
+    <span>😰<small>stres, chaos</small></span>
+    <span>😕<small>dezorientacja</small></span>
+    <span>🙂<small>poczucie kontroli</small></span>
+    <span>😠<small>frustracja, lęk</small></span>
+    <span>😐<small>zmęczenie</small></span>
+    <span>🤞<small>niepewność</small></span>
+  </div>
+</div>
+
+<div class="map">
+
+  <div class="stage">
+    <div class="stage-head"><span class="num">ETAP 1</span><h2>Zdarzenie</h2>
+      <div class="goal">Szkoda lub pilna sprawa. Cel: ogarnąć sytuację, dowiedzieć się „co mam teraz zrobić?"</div></div>
+    <div class="card doing"><h3>Co robi</h3><ul><li>Skupia się na zdarzeniu, nie na ubezpieczeniu</li><li>Przy pierwszym razie chce prowadzenia „za rączkę"</li></ul></div>
+    <div class="card pain"><h3>Problemy</h3><ul><li>Nerwy, trudne warunki, brak polisy pod ręką</li><li>Nie zna „branżowej" nazwy swojej sprawy</li></ul></div>
+    <div class="card quote"><h3>Cytat</h3>„To jest ten moment, w którym ja jednak wybieram dzwonienie od robienia samodzielnie (…) bo to nie jest codzienna sytuacja."<span class="src">18.06 08:36, 32:03</span></div>
+    <div class="card opp"><h3>Szanse</h3><ul><li>Komunikat: „Nie musisz zgłaszać od razu — po kilku dniach też jest OK"</li></ul></div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head"><span class="num">ETAP 2</span><h2>Szukanie kontaktu</h2>
+      <div class="goal">Znaleźć drogę do ubezpieczyciela. Start najczęściej w Google, nie w menu strony.</div></div>
+    <div class="card doing"><h3>Co robi</h3><ul><li>Wpisuje „ergo + [sprawa]" w wyszukiwarkę</li><li>Skanuje stronę po słowie-kluczu, zagląda do stopki</li></ul></div>
+    <div class="card pain"><h3>Problemy</h3><ul><li>Strona wygląda ofertowo — „Zgłoś szkodę" niewidoczne</li><li>Pop-upy sprzedażowe obniżają zaufanie</li></ul></div>
+    <div class="card quote"><h3>Cytat</h3>„Przeszukałem całą stronę (…) i nie znalazłem przycisku na zgłoś szkodę."<span class="src">18.06 14:01, 62:34</span></div>
+    <div class="card opp"><h3>Szanse</h3><ul><li>Stały, pływający przycisk „Zgłoś szkodę" (jak czat)</li><li>SEO prowadzące wprost do formularzy</li></ul></div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head"><span class="num">ETAP 3</span><h2>Wybór kanału</h2>
+      <div class="goal">Telefon, formularz, czat czy agent? Decydują pilność sprawy i „pierwszy raz".</div></div>
+    <div class="card doing"><h3>Co robi</h3><ul><li>Pilne/nowe → telefon; znane/niepilne → formularz</li><li>Czat wybierany, gdy widoczny i czynny</li></ul></div>
+    <div class="card pain"><h3>Problemy</h3><ul><li>„Formularz i tak kończy się telefonem"</li><li>Wieczorem infolinia nieczynna; brak live chatu na ścieżce szkody</li></ul></div>
+    <div class="card quote"><h3>Cytat</h3>„Najgorzej, że nie ma live chat. To by było najlepsze dla mnie, tak szczerze."<span class="src">16.06 10:01, 36:17</span></div>
+    <div class="card opp"><h3>Szanse</h3><ul><li>Czat = „formularz + infolinia": pisemny, natychmiastowy, z eskalacją do człowieka</li></ul></div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head"><span class="num">ETAP 4</span><h2>Wybór kategorii</h2>
+      <div class="goal">Dopasować sytuację życiową do taksonomii ubezpieczyciela. Tu rodzi się 30% nietrafień w reklamacjach i 80% w ODO.</div></div>
+    <div class="card doing"><h3>Co robi</h3><ul><li>Wybiera przez eliminację („nie to, nie to — więc to")</li><li>Gdy nic nie pasuje: „inne", reklamacja albo telefon</li></ul></div>
+    <div class="card pain"><h3>Problemy</h3><ul><li>Żargon: BLS, assistance, roszczenie, wyposażenie vs rzeczy osobiste</li><li>Brak typowych kategorii (wiatr, zdarzenie losowe)</li><li>Lęk: „zły wybór = odmowa"</li></ul></div>
+    <div class="card quote"><h3>Cytat</h3>„Zgłosiłbym reklamację w końcu — to jedyny formularz, który ktoś faktycznie przeczyta i przekieruje dalej."<span class="src">22.06 18:03, 40:50</span></div>
+    <div class="card opp"><h3>Szanse</h3><ul><li>Chat-router / kreator: opisz sprawę swoimi słowami, AI kategoryzuje w tle</li><li>Przykłady sytuacji przy każdej kategorii</li></ul></div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head"><span class="num">ETAP 5</span><h2>Wypełnianie i wysłanie</h2>
+      <div class="goal">Podać dane i domknąć zgłoszenie — najlepiej bez szukania dokumentów i bez „pytań do rzeczoznawcy".</div></div>
+    <div class="card doing"><h3>Co robi</h3><ul><li>Wypełnia „szkieletowo", asekuruje się („na wszelki wypadek tak")</li><li>Szuka potwierdzenia mailowego jako dowodu</li></ul></div>
+    <div class="card pain"><h3>Problemy</h3><ul><li>Nr polisy / PESEL jako bariera; dublowanie danych, które TU już ma</li><li>Szacowanie kwoty i „elementy pojazdu" = praca rzeczoznawcy</li></ul></div>
+    <div class="card quote"><h3>Cytat</h3>„Zgłaszam szkodę do konkretnego numeru ubezpieczenia. Więc oni już mają te dane."<span class="src">17.06 18:00, 73:07</span></div>
+    <div class="card opp"><h3>Szanse</h3><ul><li>Prefill po numerze polisy/PESEL; opcja „nie wiem / oceni rzeczoznawca"</li><li>Checklist na starcie + rzetelny pasek postępu</li></ul></div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head"><span class="num">ETAP 6</span><h2>Po zgłoszeniu</h2>
+      <div class="goal">Wiedzieć, że dotarło, co się teraz wydarzy i kiedy będzie kontakt.</div></div>
+    <div class="card doing"><h3>Co robi</h3><ul><li>Czeka na telefon; przy odmowie odwołuje się albo rezygnuje</li></ul></div>
+    <div class="card pain"><h3>Problemy</h3><ul><li>Brak informacji „co dalej" i czy można naprawiać/sprzątać</li><li>Odmowa po złej kategorii bez przekierowania → trwała utrata zaufania</li></ul></div>
+    <div class="card quote"><h3>Cytat</h3>„Dwa razy źle zaznaczyłem (…) i dwa razy została mi od razu wydana decyzja odmowna."<span class="src">15.06 17:01, 81:50</span></div>
+    <div class="card opp"><h3>Szanse</h3><ul><li>Mapa procesu po wysłaniu + tracker statusu online</li><li>Przekierowanie źle skategoryzowanych zgłoszeń zamiast odmowy</li></ul></div>
+  </div>
+
+</div>
+
+<footer>
+  Uproszczona wersja pełnej CJM (plik „Ergo - CJM - dokonczona.xlsx"). Źródło: transkrypcje 20 sesji badawczych ERGO Hestia × Quale, czerwiec 2026.
+  Kluczowa teza mapy: użytkownik sam tłumaczy swoją sytuację życiową na wewnętrzną taksonomię ubezpieczyciela — metodą eliminacji i „formularza ostatniej szansy". To tłumaczenie powinien wykonywać system.
+</footer>
+
+<script>
+  document.querySelectorAll('.toggles button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      b.classList.toggle('off');
+      const t=b.dataset.t, off=b.classList.contains('off');
+      document.querySelectorAll('.card.'+t).forEach(c=>c.style.display=off?'none':'');
+    });
+  });
+</script>
+</body>
+</html>
